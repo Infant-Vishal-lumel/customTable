@@ -1,0 +1,39 @@
+.light {
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+.dark {
+  --background-color: #333333;
+  --text-color: #ffffff;
+}
+body.light {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+body.dark {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.custom-table th,
+.custom-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+.custom-table th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+body.dark .custom-table th {
+  background-color: #444444;
+}
+body.dark .custom-table td {
+  background-color: #555555;
+  color: #ffffff;
+}
+
+
+/*# sourceMappingURL=https://localhost:8080/assets/visual.css.map*/

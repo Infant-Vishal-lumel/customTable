@@ -1,0 +1,80 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Rows",
+      "name": "rows",
+      "kind": "Grouping"
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "kind": "Grouping"
+    },
+    {
+      "displayName": "Value",
+      "name": "value",
+      "kind": "Measure"
+    }
+  ],
+  "objects": {
+    "settings": {
+      "displayName": "Settings",
+      "properties": {
+        "theme": {
+          "displayName": "Theme",
+          "type": {
+            "enumeration": [
+              { "value": "light", "displayName": "Light" },
+              { "value": "dark", "displayName": "Dark" }
+            ]
+          }
+        },
+        "valueFormat": {
+          "displayName": "Value Format",
+          "type": {
+            "enumeration": [
+              {
+                "displayName": "Default",
+                "value": "default"
+              },
+              {
+                "displayName": "Thousand",
+                "value": "thousand"
+              },
+              {
+                "displayName": "Million",
+                "value": "million"
+              },
+              {
+                "displayName": "Billion",
+                "value": "billion"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "matrix": {
+        "rows": {
+          "for": {
+            "in": "rows"
+          }
+        },
+        "columns": {
+          "for": {
+            "in": "columns"
+          }
+        },
+        "values": {
+          "for": {
+            "in": "value"
+          }
+        }
+      }
+    }
+  ],
+  "privileges": []
+}
