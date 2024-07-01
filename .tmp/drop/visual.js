@@ -471,6 +471,15 @@ if (true) {
 /* harmony export */   A: () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(540);
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 const formatOptions = [
@@ -518,11 +527,11 @@ const getRenderVal = (formatValue) => {
         return (value === null || value === void 0 ? void 0 : value.toString()) || "";
     };
 };
-// eslint-disable-next-line max-lines-per-function
-const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChange, onSelect, }) => {
+const CustomComponent = ({ dataView, host, settings, onPropertyChange, selectionManager, }) => {
     var _a, _b, _c, _d, _e, _f;
     const [theme, setTheme] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(settings.theme);
     const [valueFormat, setValueFormat] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(settings.valueFormat);
+    const [selectedRowIndex, setSelectedRowIndex] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
     const toggleValue = theme === "light" ? "dark" : "light";
     (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
         document.body.className = theme;
@@ -530,21 +539,25 @@ const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChang
     const toggleTheme = () => {
         const newTheme = toggleValue;
         setTheme(newTheme);
-        onThemeChange(newTheme);
+        onPropertyChange('theme', newTheme);
     };
     const handleValueFormatChange = (event) => {
         const newValueFormat = event.target.value;
         setValueFormat(newValueFormat);
-        onValueFormatChange(newValueFormat);
+        onPropertyChange('valueFormat', newValueFormat);
     };
     const rows = ((_c = (_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _a === void 0 ? void 0 : _a.rows) === null || _b === void 0 ? void 0 : _b.root) === null || _c === void 0 ? void 0 : _c.children) || [];
     const columns = ((_f = (_e = (_d = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _d === void 0 ? void 0 : _d.columns) === null || _e === void 0 ? void 0 : _e.root) === null || _f === void 0 ? void 0 : _f.children) || [];
     const { formatValue, formatSpanLabel } = getFormatUtilities(valueFormat);
     const renderValue = getRenderVal(formatValue);
-    const handleCellClick = (event, selectionId) => {
-        event.preventDefault();
-        onSelect(selectionId);
-    };
+    const handleRowClick = (row, rowIndex) => __awaiter(void 0, void 0, void 0, function* () {
+        const selectionId = host
+            .createSelectionIdBuilder()
+            .withMatrixNode(row, dataView.matrix.rows.levels)
+            .createSelectionId();
+        yield selectionManager.select(selectionId, true);
+        setSelectedRowIndex(rowIndex);
+    });
     return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: theme },
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("h2", null, "Data Table"),
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { marginBottom: 16 } },
@@ -570,9 +583,12 @@ const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChang
                     }))),
             react__WEBPACK_IMPORTED_MODULE_0__.createElement("tbody", null, rows.map((row, rowIndex) => {
                 var _a, _b;
-                return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", { key: rowIndex },
+                return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", { key: rowIndex, onClick: () => handleRowClick(row, rowIndex), style: {
+                        cursor: "pointer",
+                        backgroundColor: selectedRowIndex === rowIndex ? "#d3d3d3" : "transparent",
+                    } },
                     react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", null, renderValue((_b = (_a = row.levelValues) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value)),
-                    columns.map((column, colIndex) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", { key: colIndex, onClick: (event) => handleCellClick(event, row.identity), style: { cursor: "pointer" } }, row.values && row.values[colIndex]
+                    columns.map((column, colIndex) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", { key: colIndex, style: { cursor: "pointer" } }, row.values && row.values[colIndex]
                         ? renderValue(row.values[colIndex].value)
                         : "")))));
             })))));
@@ -599,8 +615,8 @@ class Visual {
     constructor(options) {
         this.target = options.element;
         this.host = options.host;
-        this.selectionManager = options.host.createSelectionManager();
         this.reactRoot = react_dom_client__WEBPACK_IMPORTED_MODULE_1__/* .createRoot */ .H(this.target);
+        this.selectionManager = this.host.createSelectionManager();
     }
     update(options) {
         if (options.dataViews && options.dataViews[0]) {
@@ -608,10 +624,10 @@ class Visual {
             this.settings = this.parseSettings(dataView);
             const element = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Table_CustomComponent__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .A, {
                 dataView,
+                host: this.host,
                 settings: this.settings,
-                onThemeChange: this.onSettingsChange.bind(this),
-                onValueFormatChange: this.onSettingsChange.bind(this),
-                onSelect: this.onSelect.bind(this),
+                onPropertyChange: (property, value) => this.onSettingsChange(property, value, this.host),
+                selectionManager: this.selectionManager,
             });
             this.reactRoot.render(element);
         }
@@ -631,8 +647,8 @@ class Visual {
             this.reactRoot.unmount();
         }
     }
-    onSettingsChange(propertyName, newValue) {
-        this.settings[propertyName] = newValue;
+    onSettingsChange(propertyName, newValue, host) {
+        console.log(propertyName, newValue);
         const instance = {
             objectName: "settings",
             properties: {
@@ -643,12 +659,8 @@ class Visual {
         const instancesToPersist = {
             merge: [instance],
         };
-        this.host.persistProperties(instancesToPersist);
-    }
-    onSelect(selectionId) {
-        this.selectionManager.select(selectionId).then((ids) => {
-            console.log("onSelect", selectionId);
-        });
+        console.log("is setting change", this);
+        host.persistProperties(instancesToPersist);
     }
 }
 

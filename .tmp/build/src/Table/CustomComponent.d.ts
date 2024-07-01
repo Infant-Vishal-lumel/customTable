@@ -1,16 +1,17 @@
 import powerbi from "powerbi-visuals-api";
 import * as React from "react";
 import DataView = powerbi.DataView;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 interface CustomComponentProps {
     dataView: DataView;
     settings: {
         theme: string;
         valueFormat: string;
     };
-    onThemeChange: (theme: string) => void;
-    onValueFormatChange: (valueFormat: string) => void;
-    onSelect: (selectionId: ISelectionId) => void;
+    host: IVisualHost;
+    onPropertyChange: (propertyName: string, theme: string) => void;
+    selectionManager: ISelectionManager;
 }
 declare const CustomComponent: React.FC<CustomComponentProps>;
 export default CustomComponent;

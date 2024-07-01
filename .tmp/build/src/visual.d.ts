@@ -14,5 +14,4 @@ export declare class Visual implements IVisual {
     private parseSettings;
     private clear;
     private onSettingsChange;
-    private onSelect;
 }

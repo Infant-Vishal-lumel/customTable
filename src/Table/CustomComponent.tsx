@@ -1,8 +1,11 @@
+/* eslint-disable max-lines-per-function */
 import powerbi from "powerbi-visuals-api";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import DataView = powerbi.DataView;
 import ISelectionId = powerbi.visuals.ISelectionId;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 
 interface CustomComponentProps {
   dataView: DataView;
@@ -10,9 +13,9 @@ interface CustomComponentProps {
     theme: string;
     valueFormat: string;
   };
-  onThemeChange: (theme: string) => void;
-  onValueFormatChange: (valueFormat: string) => void;
-  onSelect: (selectionId: ISelectionId) => void;
+  host: IVisualHost;
+  onPropertyChange: (propertyName: string, theme: string) => void;
+  selectionManager: ISelectionManager;
 }
 
 const formatOptions = [
@@ -64,16 +67,16 @@ const getRenderVal = (formatValue: (value: number) => string) => {
   };
 };
 
-// eslint-disable-next-line max-lines-per-function
 const CustomComponent: React.FC<CustomComponentProps> = ({
   dataView,
+  host,
   settings,
-  onThemeChange,
-  onValueFormatChange,
-  onSelect,
+  onPropertyChange,
+  selectionManager,
 }) => {
   const [theme, setTheme] = useState(settings.theme);
   const [valueFormat, setValueFormat] = useState(settings.valueFormat);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const toggleValue = theme === "light" ? "dark" : "light";
 
   useEffect(() => {
@@ -83,7 +86,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
   const toggleTheme = () => {
     const newTheme = toggleValue;
     setTheme(newTheme);
-    onThemeChange(newTheme);
+    onPropertyChange('theme', newTheme);
   };
 
   const handleValueFormatChange = (
@@ -91,7 +94,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
   ) => {
     const newValueFormat = event.target.value;
     setValueFormat(newValueFormat);
-    onValueFormatChange(newValueFormat);
+    onPropertyChange('valueFormat', newValueFormat);
   };
 
   const rows = dataView?.matrix?.rows?.root?.children || [];
@@ -101,12 +104,14 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
 
   const renderValue = getRenderVal(formatValue);
 
-  const handleCellClick = (
-    event: React.MouseEvent<HTMLTableCellElement>,
-    selectionId: ISelectionId
-  ) => {
-    event.preventDefault();
-    onSelect(selectionId);
+  const handleRowClick = async (row: any, rowIndex: number) => {
+    const selectionId: ISelectionId = host
+      .createSelectionIdBuilder()
+      .withMatrixNode(row, dataView.matrix.rows.levels)
+      .createSelectionId();
+
+    await selectionManager.select(selectionId, true);
+    setSelectedRowIndex(rowIndex);
   };
 
   return (
@@ -149,16 +154,18 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr
+              key={rowIndex}
+              onClick={() => handleRowClick(row, rowIndex)}
+              style={{
+                cursor: "pointer",
+                backgroundColor:
+                  selectedRowIndex === rowIndex ? "#d3d3d3" : "transparent",
+              }}
+            >
               <td>{renderValue(row.levelValues?.[0]?.value)}</td>
               {columns.map((column, colIndex) => (
-                <td
-                  key={colIndex}
-                  onClick={(event) =>
-                    handleCellClick(event, row.identity as ISelectionId)
-                  }
-                  style={{ cursor: "pointer" }}
-                >
+                <td key={colIndex} style={{ cursor: "pointer" }}>
                   {row.values && row.values[colIndex]
                     ? renderValue(row.values[colIndex].value)
                     : ""}

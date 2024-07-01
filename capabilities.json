@@ -53,18 +53,6 @@
           }
         }
       }
-    },
-    "general": {
-      "displayName": "General",
-      "properties": {
-        "formatString": {
-          "type": {
-            "formatting": {
-              "formatString": true
-            }
-          }
-        }
-      }
     }
   },
   "dataViewMappings": [
@@ -88,5 +76,6 @@
       }
     }
   ],
-  "privileges": []
+  "privileges": [],
+  "supportsMultiVisualSelection": true
 }

@@ -9,9 +9,8 @@ import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructor
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import VisualObjectInstance = powerbi.VisualObjectInstance;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 
 export class Visual implements IVisual {
   private target: HTMLElement;
@@ -23,8 +22,8 @@ export class Visual implements IVisual {
   constructor(options: VisualConstructorOptions) {
     this.target = options.element;
     this.host = options.host;
-    this.selectionManager = options.host.createSelectionManager();
     this.reactRoot = ReactDOM.createRoot(this.target);
+    this.selectionManager = this.host.createSelectionManager();
   }
 
   public update(options: VisualUpdateOptions) {
@@ -34,10 +33,10 @@ export class Visual implements IVisual {
 
       const element = React.createElement(CustomComponent, {
         dataView,
+        host: this.host,
         settings: this.settings,
-        onThemeChange: this.onSettingsChange.bind(this),
-        onValueFormatChange: this.onSettingsChange.bind(this),
-        onSelect: this.onSelect.bind(this),
+        onPropertyChange: (property, value) => this.onSettingsChange(property, value, this.host),
+        selectionManager: this.selectionManager,
       });
 
       this.reactRoot.render(element);
@@ -60,8 +59,8 @@ export class Visual implements IVisual {
     }
   }
 
-  private onSettingsChange(propertyName: string, newValue: any) {
-    this.settings[propertyName] = newValue;
+  private onSettingsChange(propertyName: string, newValue: any, host) {
+    console.log(propertyName, newValue)
 
     const instance: VisualObjectInstance = {
       objectName: "settings",
@@ -74,13 +73,7 @@ export class Visual implements IVisual {
     const instancesToPersist: powerbi.VisualObjectInstancesToPersist = {
       merge: [instance],
     };
-
-    this.host.persistProperties(instancesToPersist);
-  }
-
-  private onSelect(selectionId: ISelectionId) {
-    this.selectionManager.select(selectionId).then((ids: ISelectionId[]) => {
-      console.log("onSelect", selectionId);
-    });
+    console.log("is setting change", this);
+    host.persistProperties(instancesToPersist);
   }
 }
