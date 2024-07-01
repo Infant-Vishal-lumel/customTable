@@ -473,49 +473,62 @@ if (true) {
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(540);
 
 
-const getFormatValue = (valueFormat) => {
-    return (value) => {
-        switch (valueFormat) {
-            case "thousand":
-                return (value / 1000).toFixed(2) + "K";
-            case "million":
-                return (value / 1000000).toFixed(2) + "M";
-            case "billion":
-                return (value / 1000000000).toFixed(2) + "B";
-            default:
-                return value.toString();
-        }
+const formatOptions = [
+    {
+        value: "default",
+        label: "Default",
+        formatValue: (value) => value.toString(),
+        spanLabel: null,
+    },
+    {
+        value: "thousand",
+        label: "Thousand",
+        formatValue: (value) => (value / 1000).toFixed(2) + "K",
+        spanLabel: "In Thousand",
+    },
+    {
+        value: "million",
+        label: "Million",
+        formatValue: (value) => (value / 1000000).toFixed(2) + "M",
+        spanLabel: "In Million",
+    },
+    {
+        value: "billion",
+        label: "Billion",
+        formatValue: (value) => (value / 1000000000).toFixed(2) + "B",
+        spanLabel: "In Billion",
+    },
+];
+const getFormatUtilities = (valueFormat) => {
+    const formatOption = formatOptions.find((option) => option.value === valueFormat) ||
+        formatOptions[0];
+    return {
+        formatValue: formatOption.formatValue,
+        formatSpanLabel: formatOption.spanLabel,
     };
 };
-const formatLabels = [
-    { value: "default", label: "Default" },
-    { value: "thousand", label: "Thousand" },
-    { value: "million", label: "Million" },
-    { value: "billion", label: "Billion" },
-];
-function getFormatSpanLabel(valueFormat) {
-    return (column) => {
-        switch (valueFormat) {
-            case "thousand":
-                return `in Thousand`;
-            case "million":
-                return `in Million`;
-            case "billion":
-                return `in Billion`;
-            default:
-                return null;
+const getRenderVal = (formatValue) => {
+    return (value) => {
+        if (typeof value === "number") {
+            return formatValue(value);
         }
+        if (value instanceof Date) {
+            return value.toLocaleDateString();
+        }
+        return (value === null || value === void 0 ? void 0 : value.toString()) || "";
     };
-}
-const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChange, }) => {
+};
+// eslint-disable-next-line max-lines-per-function
+const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChange, onSelect, }) => {
     var _a, _b, _c, _d, _e, _f;
     const [theme, setTheme] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(settings.theme);
     const [valueFormat, setValueFormat] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(settings.valueFormat);
+    const toggleValue = theme === "light" ? "dark" : "light";
     (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
         document.body.className = theme;
     }, [theme]);
     const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light";
+        const newTheme = toggleValue;
         setTheme(newTheme);
         onThemeChange(newTheme);
     };
@@ -526,21 +539,20 @@ const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChang
     };
     const rows = ((_c = (_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _a === void 0 ? void 0 : _a.rows) === null || _b === void 0 ? void 0 : _b.root) === null || _c === void 0 ? void 0 : _c.children) || [];
     const columns = ((_f = (_e = (_d = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _d === void 0 ? void 0 : _d.columns) === null || _e === void 0 ? void 0 : _e.root) === null || _f === void 0 ? void 0 : _f.children) || [];
-    const formatValue = getFormatValue(valueFormat);
-    const renderValue = (value) => {
-        if (typeof value === "number") {
-            return formatValue(value);
-        }
-        if (value instanceof Date) {
-            return value.toLocaleDateString();
-        }
-        return (value === null || value === void 0 ? void 0 : value.toString()) || "";
+    const { formatValue, formatSpanLabel } = getFormatUtilities(valueFormat);
+    const renderValue = getRenderVal(formatValue);
+    const handleCellClick = (event, selectionId) => {
+        event.preventDefault();
+        onSelect(selectionId);
     };
-    const getHeaderSpanLabel = getFormatSpanLabel(valueFormat);
     return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: theme },
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("h2", null, "Data Table"),
-        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { onClick: toggleTheme }, "Change Theme"),
-        react__WEBPACK_IMPORTED_MODULE_0__.createElement("select", { value: valueFormat, onChange: handleValueFormatChange }, formatLabels.map((option) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { key: option.value, value: option.value }, option.label)))),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { marginBottom: 16 } },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { onClick: toggleTheme },
+                "Change ",
+                toggleValue,
+                " Theme"),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("select", { value: valueFormat, onChange: handleValueFormatChange, style: { marginLeft: 16 } }, formatOptions.map((option) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { key: option.value, value: option.value }, option.label))))),
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("table", { className: "custom-table" },
             react__WEBPACK_IMPORTED_MODULE_0__.createElement("thead", null,
                 react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", null,
@@ -554,13 +566,13 @@ const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChang
                                     display: "inline-block",
                                     width: "100%",
                                     textAlign: "right",
-                                } }, getHeaderSpanLabel(column))));
+                                } }, formatSpanLabel)));
                     }))),
             react__WEBPACK_IMPORTED_MODULE_0__.createElement("tbody", null, rows.map((row, rowIndex) => {
                 var _a, _b;
                 return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", { key: rowIndex },
                     react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", null, renderValue((_b = (_a = row.levelValues) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value)),
-                    columns.map((column, colIndex) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", { key: colIndex }, row.values && row.values[colIndex]
+                    columns.map((column, colIndex) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", { key: colIndex, onClick: (event) => handleCellClick(event, row.identity), style: { cursor: "pointer" } }, row.values && row.values[colIndex]
                         ? renderValue(row.values[colIndex].value)
                         : "")))));
             })))));
@@ -585,21 +597,21 @@ const CustomComponent = ({ dataView, settings, onThemeChange, onValueFormatChang
 
 class Visual {
     constructor(options) {
-        this.reactRoot = null;
         this.target = options.element;
         this.host = options.host;
+        this.selectionManager = options.host.createSelectionManager();
         this.reactRoot = react_dom_client__WEBPACK_IMPORTED_MODULE_1__/* .createRoot */ .H(this.target);
     }
     update(options) {
         if (options.dataViews && options.dataViews[0]) {
             const dataView = options === null || options === void 0 ? void 0 : options.dataViews[0];
             this.settings = this.parseSettings(dataView);
-            // Pass the entire dataView object and settings to CustomComponent
             const element = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Table_CustomComponent__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .A, {
                 dataView,
                 settings: this.settings,
-                onThemeChange: this.onThemeChange.bind(this),
-                onValueFormatChange: this.onValueFormatChange.bind(this),
+                onThemeChange: this.onSettingsChange.bind(this),
+                onValueFormatChange: this.onSettingsChange.bind(this),
+                onSelect: this.onSelect.bind(this),
             });
             this.reactRoot.render(element);
         }
@@ -619,24 +631,12 @@ class Visual {
             this.reactRoot.unmount();
         }
     }
-    enumerateObjectInstances(options) {
-        var _a, _b;
-        const settings = {
-            objectName: "settings",
-            properties: {
-                theme: (_a = this.settings) === null || _a === void 0 ? void 0 : _a.theme,
-                valueFormat: (_b = this.settings) === null || _b === void 0 ? void 0 : _b.valueFormat,
-            },
-            selector: null,
-        };
-        return [settings];
-    }
-    onThemeChange(newTheme) {
-        this.settings.theme = newTheme;
+    onSettingsChange(propertyName, newValue) {
+        this.settings[propertyName] = newValue;
         const instance = {
             objectName: "settings",
             properties: {
-                theme: newTheme,
+                [propertyName]: newValue,
             },
             selector: null,
         };
@@ -645,19 +645,10 @@ class Visual {
         };
         this.host.persistProperties(instancesToPersist);
     }
-    onValueFormatChange(newValueFormat) {
-        this.settings.valueFormat = newValueFormat;
-        const instance = {
-            objectName: "settings",
-            properties: {
-                valueFormat: newValueFormat,
-            },
-            selector: null,
-        };
-        const instancesToPersist = {
-            merge: [instance],
-        };
-        this.host.persistProperties(instancesToPersist);
+    onSelect(selectionId) {
+        this.selectionManager.select(selectionId).then((ids) => {
+            console.log("onSelect", selectionId);
+        });
     }
 }
 
