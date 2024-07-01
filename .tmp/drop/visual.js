@@ -539,12 +539,12 @@ const CustomComponent = ({ dataView, host, settings, onPropertyChange, selection
     const toggleTheme = () => {
         const newTheme = toggleValue;
         setTheme(newTheme);
-        onPropertyChange('theme', newTheme);
+        onPropertyChange("theme", newTheme);
     };
     const handleValueFormatChange = (event) => {
         const newValueFormat = event.target.value;
         setValueFormat(newValueFormat);
-        onPropertyChange('valueFormat', newValueFormat);
+        onPropertyChange("valueFormat", newValueFormat);
     };
     const rows = ((_c = (_b = (_a = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _a === void 0 ? void 0 : _a.rows) === null || _b === void 0 ? void 0 : _b.root) === null || _c === void 0 ? void 0 : _c.children) || [];
     const columns = ((_f = (_e = (_d = dataView === null || dataView === void 0 ? void 0 : dataView.matrix) === null || _d === void 0 ? void 0 : _d.columns) === null || _e === void 0 ? void 0 : _e.root) === null || _f === void 0 ? void 0 : _f.children) || [];
@@ -555,7 +555,7 @@ const CustomComponent = ({ dataView, host, settings, onPropertyChange, selection
             .createSelectionIdBuilder()
             .withMatrixNode(row, dataView.matrix.rows.levels)
             .createSelectionId();
-        yield selectionManager.select(selectionId, true);
+        yield selectionManager.select(selectionId);
         setSelectedRowIndex(rowIndex);
     });
     return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: theme },

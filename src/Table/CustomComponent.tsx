@@ -86,7 +86,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
   const toggleTheme = () => {
     const newTheme = toggleValue;
     setTheme(newTheme);
-    onPropertyChange('theme', newTheme);
+    onPropertyChange("theme", newTheme);
   };
 
   const handleValueFormatChange = (
@@ -94,7 +94,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
   ) => {
     const newValueFormat = event.target.value;
     setValueFormat(newValueFormat);
-    onPropertyChange('valueFormat', newValueFormat);
+    onPropertyChange("valueFormat", newValueFormat);
   };
 
   const rows = dataView?.matrix?.rows?.root?.children || [];
@@ -110,7 +110,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({
       .withMatrixNode(row, dataView.matrix.rows.levels)
       .createSelectionId();
 
-    await selectionManager.select(selectionId, true);
+    await selectionManager.select(selectionId);
     setSelectedRowIndex(rowIndex);
   };
 
